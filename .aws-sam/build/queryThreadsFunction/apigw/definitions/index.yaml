@@ -1,0 +1,4 @@
+Thread:
+  $ref: './thread.yaml'
+Reply:
+  $ref: './reply.yaml'

@@ -1,0 +1,38 @@
+{
+  "name": "forumservice",
+  "description": "forumService",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "aws-sdk": "^2.799.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "aws-sdk-mock": "^5.7.0",
+    "chai": "^4.3.6",
+    "mocha": "^10.1.0",
+    "sinon": "^14.0.0",
+    "sinon-chai": "^3.7.0",
+    "standard": "^17.0.0",
+    "swagger-ui-watcher": "^2.1.12"
+  },
+  "scripts": {
+    "test": "mocha \"test/**/*.js\" --require test/testSetup.js  --reporter list",
+    "predeploy": "sam build && aws s3 cp ./apigw/openapi.yaml s3://forumservice-openapi-bucket",
+    "deploy": "sam deploy --stack-name forumService --s3-bucket forumservice-bucket --capabilities CAPABILITY_IAM",
+    "swagger": "swagger-ui-watcher ./apigw/openapi.yaml",
+    "lint": "standard",
+    "fix": "standard --fix"
+  },
+  "standard": {
+    "globals": [
+      "expect",
+      "it",
+      "describe",
+      "beforeEach",
+      "sinon",
+      "describe",
+      "afterEach"
+    ]
+  }
+}

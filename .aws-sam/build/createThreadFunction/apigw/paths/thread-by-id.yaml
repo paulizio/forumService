@@ -1,0 +1,23 @@
+parameters:
+  - name: "threadId"
+    in: "path"
+    required: true
+    schema:
+      type: "string"
+get:
+    responses:
+      200:
+        description: "Default response for GET /thread/{threadId}"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Thread'
+    x-amazon-apigateway-integration:
+      payloadFormatVersion: "2.0"
+      type: "aws_proxy"
+      httpMethod: "POST"
+      uri: 
+        Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getThreadFunction.Arn}/invocations"
+      responses:
+        default:
+          statusCode: '200'

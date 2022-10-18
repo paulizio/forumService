@@ -1,0 +1,8 @@
+/thread:
+  $ref: './thread.yaml'
+/thread/{threadId}:
+  $ref: './thread-by-id.yaml'
+/reply:
+  $ref: './reply.yaml'
+/reply/{threadId}/{replyId}:
+  $ref: './reply-by-id.yaml'

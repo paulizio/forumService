@@ -1,0 +1,253 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  forumService
+Transform:
+- AWS::Serverless-2016-10-31
+
+Resources:
+  queryThreadsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/threadHandlers/query.queryThreadsHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:Scan
+          Resource:
+            - Fn::GetAtt: [ThreadTable, Arn]
+      Environment:
+        Variables:
+          THREAD_TABLE: !Ref ThreadTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /thread
+            Method: GET
+  queryRepliesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/replyHandlers/query.queryRepliesHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:Query
+          Resource:
+            - Fn::GetAtt: [RepliesTable, Arn]
+      Environment:
+        Variables:
+          REPLIES_TABLE: !Ref RepliesTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /reply
+            Method: GET
+  getThreadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/threadHandlers/get.getThreadHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
+      Policies:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          Resource:
+            - Fn::GetAtt: [ThreadTable, Arn]
+      Environment:
+        Variables:
+          THREAD_TABLE: !Ref ThreadTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /thread/{threadId}
+            Method: GET
+  getReplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/replyHandlers/get.getReplyHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
+      Policies:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          Resource:
+            - Fn::GetAtt: [RepliesTable, Arn]
+      Environment:
+        Variables:
+          REPLIES_TABLE: !Ref RepliesTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /reply/{threadId}/{replyId}
+            Method: GET
+  createThreadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/threadHandlers/create.createThreadHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          Resource:
+            - Fn::GetAtt: [ThreadTable, Arn]
+      Environment:
+        Variables:
+          THREAD_TABLE: !Ref ThreadTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /thread
+            Method: POST
+
+  updateThreadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/threadHandlers/update.updateThreadHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          Resource:
+            - Fn::GetAtt: [ThreadTable, Arn]
+      Environment:
+        Variables:
+          THREAD_TABLE: !Ref ThreadTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /thread/{threadId}
+            Method: POST
+
+  createReplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/replyHandlers/create.createReplyHandler
+      Runtime: nodejs14.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+      -
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          Resource:
+            - Fn::GetAtt: [RepliesTable, Arn]
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          - dynamodb:GetItem
+          Resource:
+            - Fn::GetAtt: [ThreadTable, Arn]
+      - LambdaInvokePolicy:
+          FunctionName: !Ref getThreadFunction
+      - LambdaInvokePolicy:
+          FunctionName: !Ref updateThreadFunction
+      Environment:
+        Variables:
+          REPLIES_TABLE: !Ref RepliesTable
+          THREAD_TABLE: !Ref ThreadTable
+          GET_THREADS_FUNCTION: !Ref getThreadFunction
+          UPDATE_THREAD_FUNCTION: !Ref updateThreadFunction
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /reply
+            Method: POST
+  ThreadTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions:
+          - AttributeName: threadId
+            AttributeType: S
+      KeySchema: 
+          - AttributeName: threadId
+            KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  RepliesTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions:
+          - AttributeName: threadId
+            AttributeType: S
+          - AttributeName: replyId
+            AttributeType: S
+      KeySchema: 
+          - AttributeName: threadId
+            KeyType: HASH
+          - AttributeName: replyId
+            KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+  ForumServiceApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Body:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Sub s3://forumservice-openapi-bucket/openapi.yaml 
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ForumServiceApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

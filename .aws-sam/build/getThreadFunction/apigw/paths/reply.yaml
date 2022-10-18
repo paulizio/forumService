@@ -1,0 +1,50 @@
+get:
+    parameters:
+      - name: "threadId"
+        in: "query"
+        required: true
+        schema:
+          type: "string"
+    responses:
+      200:
+        description: "Replies successfully fetched"
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Reply'
+    x-amazon-apigateway-integration:
+      payloadFormatVersion: "2.0"
+      type: "aws_proxy"
+      httpMethod: "POST"
+      uri: 
+        Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${queryRepliesFunction.Arn}/invocations"
+      responses:
+        default:
+          statusCode: '200'
+post:
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            title: ReplyPayload
+            $ref: '#/components/schemas/Thread'
+
+    responses:
+      201:
+        description: "Reply created successfully"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Thread'
+    x-amazon-apigateway-integration:
+      type: "aws_proxy"
+      httpMethod: "POST"
+      contentHandling: "CONVERT_TO_TEXT"
+      uri: 
+        Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${createReplyFunction.Arn}/invocations"
+      responses:
+        default:
+          statusCode: '201'
